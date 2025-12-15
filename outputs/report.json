@@ -1,10 +1,37 @@
 {
-    "row_count": 5,
-    "column_count": 1,
-    "columns": [
-        null
-    ],
-    "missing_counts": {
-        "null": 0
+  "row_count": 5,
+  "column_count": 1,
+  "columns": [
+    null
+  ],
+  "column_profiles": {
+    "null": {
+      "count": 5,
+      "missing": 0,
+      "unique": 5,
+      "type": "string",
+      "values": [
+        [
+          "['name', 'age', ' city', ' salary']",
+          1
+        ],
+        [
+          "['Aisha', ' 23', ' Riyadh', ' 12000']",
+          1
+        ],
+        [
+          "['Fahad', '', ' Jeddah', ' 9000']",
+          1
+        ],
+        [
+          "['Noor', ' 29', '', '']",
+          1
+        ],
+        [
+          "['Salem', ' 31', ' Dammam', ' 15000']",
+          1
+        ]
+      ]
     }
+  }
 }
