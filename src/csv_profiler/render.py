@@ -2,11 +2,10 @@ from pathlib import Path
 from typing import Any
 from datetime import datetime
 import json
-
+import os 
 
 
 def md_header(source: str) -> list[str]:
-    """ يُعيد أسطر رأس التقرير (العنوان، المصدر، تاريخ التوليد). """
     ts = datetime.now().isoformat(timespec="seconds") 
     return [
         "# CSV Profile Report",
@@ -29,7 +28,7 @@ def write_markdown(report: dict[str, Any], path: str | Path) -> None:
    
     path.parent.mkdir(parents=True, exist_ok=True)
     
-    rows = report["row_count"]
+    rows = report["n_rows"] 
     lines: list[str] = []
 
    
@@ -37,53 +36,49 @@ def write_markdown(report: dict[str, Any], path: str | Path) -> None:
     
     
     lines.append("## Summary")
-    lines.append(f"- Rows: {report['row_count']:,}")
-    lines.append(f"- Columns: {report['column_count']:,}")
+    lines.append(f"- Rows: {report['n_rows']:,}")
+    lines.append(f"- Columns: {report['n_cols']:,}")
     lines.append("")
     
     
     lines.append("## Column Profiles (Table)")
     lines.extend(md_table_header())
     
-    for name, col_profile in report["column_profiles"].items():
+    for col_profile in report["columns"]:
         missing = col_profile["missing"]
-        # تأكد من أن نسبة المفقودات تستخدم 'rows' من التقرير العام
-        missing_pct = (missing / rows) if rows else 0.0 
+        missing_pct = col_profile["missing_pct"] 
         
         row_line = (
-            f"| `{name}` | {col_profile['type']} | "
-            f"{missing} ({missing_pct:.1%}) | {col_profile['unique']:,} |"
+            f"| `{col_profile['name']}` | {col_profile['type']} | "
+            f"{missing} ({missing_pct:.1f}%) | {col_profile['unique']:,} |"
         )
         lines.append(row_line)
     lines.append("")
     
     lines.append("## Detailed Column Stats")
     
-    for name, col_profile in report["column_profiles"].items():
+    for col_profile in report["columns"]:
+        name = col_profile["name"]
         lines.append(f"### Column: `{name}`")
         lines.append(f"- **Type:** {col_profile['type']}")
-        lines.append(f"- **Total Count:** {col_profile['count']:,}")
         
-        if col_profile.get("missing") is not None and rows > 0:
-             missing_pct_detail = col_profile["missing"] / rows
-        else:
-             missing_pct_detail = 0.0
+        lines.append(f"- **Total Count:** {rows:,}")
+        
+        missing_pct_detail = col_profile["missing_pct"] / 100.0 
              
         lines.append(f"- **Missing:** {col_profile['missing']:,} ({missing_pct_detail:.1%})")
         lines.append(f"- **Unique:** {col_profile['unique']:,}")
         
         
-        if col_profile["type"] in ["integer", "float"]:
-            stats = col_profile["stats"]
+        if col_profile["type"] == "number":
             lines.append("#### Numeric Statistics")
-            lines.append(f"- **Min:** {stats.get('min'):.2f}" if stats.get('min') is not None else f"- **Min:** N/A")
-            lines.append(f"- **Max:** {stats.get('max'):.2f}" if stats.get('max') is not None else f"- **Max:** N/A")
-            lines.append(f"- **Mean:** {stats.get('mean'):.2f}" if stats.get('mean') is not None else f"- **Mean:** N/A")
+            lines.append(f"- **Min:** {col_profile.get('min'):.2f}" if col_profile.get('min') is not None else f"- **Min:** N/A")
+            lines.append(f"- **Max:** {col_profile.get('max'):.2f}" if col_profile.get('max') is not None else f"- **Max:** N/A")
+            lines.append(f"- **Mean:** {col_profile.get('mean'):.2f}" if col_profile.get('mean') is not None else f"- **Mean:** N/A")
             
-        elif col_profile["type"] in ["string", "boolean"]:
+        elif col_profile["type"] == "text":
             lines.append("#### Top Values")
-            for value, count in col_profile['values']:
-                lines.append(f"- `{value}`: {count:,} times")
+            lines.append("*(Top values are not calculated in the current profiling baseline)*")
 
         lines.append("") 
         
@@ -91,10 +86,7 @@ def write_markdown(report: dict[str, Any], path: str | Path) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-
-
 def write_json(report: dict[str, Any], path: str | Path) -> None:
-    """تكتب التقرير في ملف JSON مع تنسيق للقراءة."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     

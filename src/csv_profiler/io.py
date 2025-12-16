@@ -1,11 +1,24 @@
-# src/csv_profiler/io.py
 from pathlib import Path
 import csv
-from typing import Any
+from typing import Any, Dict, List
 
-def read_csv_rows(path: str | Path) -> list[dict[str, str]]:
-    """Reads a CSV as a list of rows (each row is a dict of strings)."""
-    path_obj = Path(path)
-    with path_obj.open(mode="r", encoding="utf-8", newline="") as f:
+def read_csv_rows(path: Path | str) -> List[Dict[str, str]]:
+ 
+    csv_path = Path(path)
+    
+    if not csv_path.exists():
+        raise FileNotFoundError(f"CSV file not found: {path}")
+
+    rows: List[Dict[str, str]] = []
+
+    with csv_path.open(mode="r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
-        return list(reader)
+        
+        for row in reader:
+            processed_row = {key: str(value) for key, value in row.items()}
+            rows.append(processed_row)
+
+    if not rows:
+        raise ValueError("CSV has no data rows")
+
+    return rows

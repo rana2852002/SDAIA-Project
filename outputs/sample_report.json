@@ -1,0 +1,13 @@
+{
+  "n_rows": 5,
+  "n_cols": 1,
+  "columns": [
+    {
+      "name": null,
+      "type": "text",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "unique": 5
+    }
+  ]
+}
