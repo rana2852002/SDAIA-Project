@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 import sys
 
+
 from src.csv_profiler.io import read_csv_rows
 from src.csv_profiler.profiling import profile_rows
 from src.csv_profiler.render import write_markdown, write_json 
