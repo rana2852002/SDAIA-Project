@@ -16,74 +16,78 @@ def md_header(source: str) -> list[str]:
     ]
     
 def md_table_header() -> list[str]:
-    """ يُعيد أسطر رأس جدول الأعمدة مع فواصل التنسيق. """
     return [
         "| Column | Type | Missing | Unique |",
         "|---|---:|---:|---:|", 
     ]
 
 
-def write_markdown(report: dict[str, Any], path: str | Path) -> None:
-    path = Path(path)
-   
-    path.parent.mkdir(parents=True, exist_ok=True)
+def render_markdown(report: dict[str, Any]) -> None:
+ 
     
-    rows = report["n_rows"] 
+    # فحص أمان للمفاتيح الأساسية
+    rows = report.get("n_rows", report.get("num_rows", 0))
+    cols = report.get("n_cols", report.get("num_cols", 0))
+    
     lines: list[str] = []
 
-   
     lines.extend(md_header("data/sample.csv")) 
     
-    
     lines.append("## Summary")
-    lines.append(f"- Rows: {report['n_rows']:,}")
-    lines.append(f"- Columns: {report['n_cols']:,}")
+    lines.append(f"- Rows: {rows:,}")
+    lines.append(f"- Columns: {cols:,}")
     lines.append("")
-    
     
     lines.append("## Column Profiles (Table)")
     lines.extend(md_table_header())
     
-    for col_profile in report["columns"]:
-        missing = col_profile["missing"]
-        missing_pct = col_profile["missing_pct"] 
+    for col_profile in report.get("columns", []):
+        if col_profile is None: 
+            continue
+            
+        missing = col_profile.get("missing", 0)
+        missing_pct = col_profile.get("missing_pct", 0.0) 
         
         row_line = (
-            f"| `{col_profile['name']}` | {col_profile['type']} | "
-            f"{missing} ({missing_pct:.1f}%) | {col_profile['unique']:,} |"
+            f"| `{col_profile.get('name', 'Unknown')}` | {col_profile.get('type', 'N/A')} | "
+            f"{missing} ({missing_pct:.1f}%) | {col_profile.get('unique', 0):,} |"
         )
         lines.append(row_line)
+        
     lines.append("")
-    
     lines.append("## Detailed Column Stats")
     
-    for col_profile in report["columns"]:
-        name = col_profile["name"]
-        lines.append(f"### Column: `{name}`")
-        lines.append(f"- **Type:** {col_profile['type']}")
+    for col_profile in report.get("columns", []):
+        if col_profile is None: # تجاهل العناصر الفارغة هنا أيضاً
+            continue
+            
+        name = col_profile.get("name", "Unknown")
+        col_type = col_profile.get("type", "N/A")
         
+        lines.append(f"### Column: `{name}`")
+        lines.append(f"- **Type:** {col_type}")
         lines.append(f"- **Total Count:** {rows:,}")
         
-        missing_pct_detail = col_profile["missing_pct"] / 100.0 
+        m_val = col_profile.get("missing", 0)
+        m_pct = col_profile.get("missing_pct", 0) / 100.0 
              
-        lines.append(f"- **Missing:** {col_profile['missing']:,} ({missing_pct_detail:.1%})")
-        lines.append(f"- **Unique:** {col_profile['unique']:,}")
+        lines.append(f"- **Missing:** {m_val:,} ({m_pct:.1%})")
+        lines.append(f"- **Unique:** {col_profile.get('unique', 0):,}")
         
-        
-        if col_profile["type"] == "number":
+        if col_type == "number":
             lines.append("#### Numeric Statistics")
             lines.append(f"- **Min:** {col_profile.get('min'):.2f}" if col_profile.get('min') is not None else f"- **Min:** N/A")
             lines.append(f"- **Max:** {col_profile.get('max'):.2f}" if col_profile.get('max') is not None else f"- **Max:** N/A")
             lines.append(f"- **Mean:** {col_profile.get('mean'):.2f}" if col_profile.get('mean') is not None else f"- **Mean:** N/A")
             
-        elif col_profile["type"] == "text":
+        elif col_type == "text":
             lines.append("#### Top Values")
             lines.append("*(Top values are not calculated in the current profiling baseline)*")
 
         lines.append("") 
         
     text = "\n".join(lines) + "\n"
-    path.write_text(text, encoding="utf-8")
+    return text
 
 
 def write_json(report: dict[str, Any], path: str | Path) -> None:
@@ -91,5 +95,4 @@ def write_json(report: dict[str, Any], path: str | Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     
     text = json.dumps(report, indent=2, ensure_ascii=False) + "\n" 
-    
     path.write_text(text, encoding="utf-8")

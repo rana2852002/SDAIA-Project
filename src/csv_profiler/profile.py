@@ -93,7 +93,6 @@ def numeric_stats(values: List[str | Any]) -> dict:
 
 
 def text_stats(values: List[str | Any], top_k: int = 5) -> dict:
-    """ تحسب إحصائيات بسيطة للأعمدة النصية (مثل count, missing, unique, top_k). """
     
     non_missing_values = [v for v in values if not is_missing(v)]
     total_count = len(values)
@@ -112,7 +111,6 @@ def text_stats(values: List[str | Any], top_k: int = 5) -> dict:
 
 
 def column_profile(values: List[str | Any]) -> dict:
-    """ تحلل قائمة القيم وتنشئ قاموس التنميط الكامل للعمود. """
     
     inferred_type = infer_type(values)
     
@@ -140,7 +138,6 @@ def column_profile(values: List[str | Any]) -> dict:
 
 
 def full_profile(rows: list) -> dict:
-    """ تقوم بتنميط شامل لكامل ملف البيانات (CSV). """
     
     if not rows:
         return {"row_count": 0, "column_count": 0, "columns": []}

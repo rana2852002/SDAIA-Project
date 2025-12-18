@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from csv_profiler.io import read_csv_rows
 from csv_profiler.profile import full_profile 
-from csv_profiler.render import write_json, write_markdown
+from csv_profiler.render import write_json, render_markdown
 
 
 def main() -> None:
@@ -14,7 +14,7 @@ def main() -> None:
     report = full_profile(rows) 
     
     write_json(report, "outputs/report.json")
-    write_markdown(report, "outputs/report.md")
+    render_markdown(report, "outputs/report.md")
     print("Wrote outputs/report.json and outputs/report.md")
 
 if __name__ == "__main__":

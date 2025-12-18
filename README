@@ -1,0 +1,32 @@
+CSV Profiler
+A Python-based tool designed to analyze CSV files, perform data profiling, and generate automated reports via CLI or a Graphical User Interface.
+
+## Setup
+Follow these steps to get your development environment ready:
+
+Create a Virtual Environment:
+python -m venv .venv
+
+## Run CLI
+To process a CSV file and generate a report directly from your terminal, use the following command:
+
+Bash
+python main.py data/sample.csv
+
+# Run GUI
+If you prefer a visual interface to interact with your data, run the application using:
+
+Bash
+streamlit run src/csv_profiler/app.py
+
+## Output Files
+report.json
+report.md
+
+##Project Structure
+
+src/csv_profiler/: Core logic including profiling.py and render.py.
+
+data/: Place your input CSV files here.
+
+outputs/: Where your generated reports will appear.
